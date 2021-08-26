@@ -7,6 +7,7 @@ import TextField from '@material-ui/core/TextField';
 import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
+
 //TO DO
 //create an input field where I can enter recipe name 
 //create an input field where I can enter ingredients 
@@ -74,16 +75,40 @@ class App extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {recipeValue: '',
-                  methodValue: '',
-                  recipeCardValue: "",
-                  methodCardValue: ""};
+    this.state = {
+      recipeValue: '',
+      methodValue: '',
+      ingredientsValue: '',
+      recipeCardValue: "",
+      methodCardValue: "",
+      ingredientsCardValue: "",
+      recipes: []
 
+    };
+    this.handleIngredientsChange = this.handleIngredientsChange.bind(this);
     this.handleRecipeChange = this.handleRecipeChange.bind(this);
     this.handleMethodChange = this.handleMethodChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
-  
+
+  componentDidMount(){
+    fetch("http://localhost:3000/recipes", {
+      method: 'GET',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'application/json'
+        // 'Content-Type': 'application/x-www-form-urlencoded',
+      },
+    })
+    .then(res => {
+      const foo = res.json();
+      return foo;
+    })
+    .then(res => {
+      const data = res.data;
+      this.setState(data)
+    })
+  }
   
   handleRecipeChange(event) {
     this.setState({recipeValue: event.target.value});
@@ -93,11 +118,15 @@ class App extends React.Component {
     this.setState({methodValue: event.target.value});
   }
 
+  handleIngredientsChange(event) {
+    this.setState({ingredientsValue: event.target.value});
+  }
+
   handleSubmit(event) {
 
     // POST this.state.recipeValue & this.state.methodValue to the backend. 
     // on return set the state locally
-
+    this.setState({ingredientsCardValue: this.state.ingredientsValue});
     this.setState({recipeCardValue: this.state.recipeValue});
     this.setState({methodCardValue: this.state.methodValue});
     event.preventDefault();
@@ -107,22 +136,31 @@ class App extends React.Component {
     return (
       <div>
         <form onSubmit={this.handleSubmit} >
-          <TextField id="recipe" label="Recipe" value={this.state.recipeValue} onChange={this.handleRecipeChange}  />
-          <TextField id='method' label= "Method" value={this.state.methodValue} onChange={this.handleMethodChange} />
+          <TextField id="recipe" label="Recipe" variant="outlined" value={this.state.recipeValue} onChange={this.handleRecipeChange}  />
+          <TextField id="ingredients" label="Ingredients" variant="outlined" value={this.state.ingredientsValue} onChange={this.handleIngredientsChange}  />
+          <TextField id='method' label= "Method" variant="outlined" value={this.state.methodValue} onChange={this.handleMethodChange} />
           <input type="submit" value="Submit" />
         </form>
         <Card >
-      <CardContent>
-        <Typography  gutterBottom>
-          {this.state.recipeCardValue}
-        </Typography>
-        <Typography component="p">
-          {this.state.methodCardValue}
-        </Typography>
-      </CardContent>
-    </Card>
-  
-      
+          <CardContent>
+            <Typography  gutterBottom>
+              {this.state.recipeCardValue}
+            </Typography>
+            <Typography gutterBottom>
+            {this.state.ingredientsCardValue}
+            </Typography>
+            <Typography component="p">
+              {this.state.methodCardValue}
+            </Typography>
+          </CardContent>
+        </Card>
+        {this.state.recipes.map(recipe => {
+          return (
+            <Card>
+              {recipe}
+            </Card>
+          )
+        })}
      </div>
     
     );
